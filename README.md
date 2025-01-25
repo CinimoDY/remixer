@@ -1,8 +1,23 @@
-# React + Vite
+A content remixing tool using React.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Features
 
-Currently, two official plugins are available:
+1. Paste in text we want to remix
+2. Click a button to applky the micind we want for it
+3. Send the request to an AI API endpoint
+4. See the remix in an output box
+5. Add other styling and features that wewant as we go
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Tech Stack
+
+1. React
+2. TailwindCSS
+3. Vercel
+4. ChatGPT API
+
+## Challenges
+
+1. Getting the API key working1. Add in another AI API
+2. Add a way to upload audio files to have themn transcribed
+3. Click to tweet or schedule a tweet from the output
+4. Add a way to save the remixed output to a database
