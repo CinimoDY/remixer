@@ -12,11 +12,33 @@ function App() {
   ];
 
   const handleRemix = async (style) => {
-    setIsLoading(true)
-    // TODO: Implement API call
-    setOutputText('Remixed: ' + inputText)
-    setIsLoading(false)
-  }
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/remix', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: inputText,
+          style: style
+        })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || data.details || 'Failed to remix content');
+      }
+
+      setOutputText(data.remixedText);
+    } catch (error) {
+      console.error('Detailed error:', error);
+      setOutputText(`Error: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4">

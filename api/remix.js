@@ -1,19 +1,29 @@
 import OpenAI from 'openai';
 
+// Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
+  apiKey: process.env.OPENAI_API_KEY // Securely access API key from environment
 });
 
 export default async function handler(req, res) {
+  // Only allow POST requests
   if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { text, style } = req.body;
-
   try {
-    const prompt = getPromptForStyle(style, text);
-    
+    const { text, style } = req.body;
+
+    // Debug logs
+    console.log('API Key exists:', !!process.env.OPENAI_API_KEY);
+    console.log('Received style:', style);
+    console.log('Received text length:', text?.length);
+
+    // Validate input
+    if (!text || !style) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
@@ -23,24 +33,20 @@ export default async function handler(req, res) {
         },
         {
           role: "user",
-          content: prompt
+          content: `Rewrite the following text in a ${style} style: "${text}"`
         }
       ],
     });
 
     const remixedText = completion.choices[0].message.content;
-    res.status(200).json({ remixedText });
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ message: 'Error processing request' });
-  }
-}
+    return res.status(200).json({ remixedText });
 
-function getPromptForStyle(style, text) {
-  const prompts = {
-    professional: `Rewrite the following text in a professional, business-friendly tone: "${text}"`,
-    casual: `Rewrite the following text in a casual, conversational tone: "${text}"`,
-    funny: `Rewrite the following text in a humorous way: "${text}"`,
-  };
-  return prompts[style] || prompts.professional;
+  } catch (error) {
+    // Detailed error logging
+    console.error('Full error:', error);
+    return res.status(500).json({ 
+      error: 'Error processing your request',
+      details: error.message
+    });
+  }
 } 

@@ -69,3 +69,4 @@ lerna-debug.log*
 # New editor directories and files
 .njsproj
 
+.vercel

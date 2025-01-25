@@ -5,24 +5,16 @@ function App() {
   const [outputText, setOutputText] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  const remixStyles = [
+    { id: 'professional', label: 'Professional', color: 'blue' },
+    { id: 'casual', label: 'Casual', color: 'green' },
+    { id: 'funny', label: 'Funny', color: 'purple' },
+  ];
+
   const handleRemix = async (style) => {
     setIsLoading(true)
-    try {
-      const response = await fetch('/api/remix', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          text: inputText,
-          style: style
-        })
-      })
-      const data = await response.json()
-      setOutputText(data.remixedText)
-    } catch (error) {
-      console.error('Error:', error)
-    }
+    // TODO: Implement API call
+    setOutputText('Remixed: ' + inputText)
     setIsLoading(false)
   }
 
@@ -43,32 +35,30 @@ function App() {
 
       {/* Remix Options */}
       <div className="flex gap-2 mb-4">
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded"
-          onClick={() => handleRemix('professional')}
-          disabled={isLoading}
-        >
-          Professional
-        </button>
-        <button
-          className="px-4 py-2 bg-green-500 text-white rounded"
-          onClick={() => handleRemix('casual')}
-          disabled={isLoading}
-        >
-          Casual
-        </button>
+        {remixStyles.map((style) => (
+          <button
+            key={style.id}
+            className={`px-4 py-2 bg-${style.color}-500 text-white rounded hover:bg-${style.color}-600 transition-colors`}
+            onClick={() => handleRemix(style.id)}
+            disabled={isLoading}
+          >
+            {style.label}
+          </button>
+        ))}
       </div>
 
       {/* Output Section */}
       <div className="border p-4 rounded min-h-[200px]">
         {isLoading ? (
-          <p>Loading...</p>
+          <div className="flex justify-center items-center h-full">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
         ) : (
-          <div>{outputText}</div>
+          <div className="whitespace-pre-wrap">{outputText}</div>
         )}
       </div>
     </div>
   )
 }
 
-export default App
+export default App 
