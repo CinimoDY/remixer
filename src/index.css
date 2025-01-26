@@ -11,12 +11,13 @@
 }
 
 :root {
-  --dos-black: #000000;
-  --dos-amber: #FFB000;
-  --dos-bright-amber: #FFD000;
-  --dos-dim-amber: rgba(255, 176, 0, 0.7);
-  --dos-border: #FFB000;
-  --dos-red: #FF0000;
+  --color-theme-background: #000000;
+  --color-theme-text-primary: #FFB000;
+  --color-theme-text-secondary: rgba(255, 176, 0, 0.7);
+  --color-theme-text-highlight: #FFD000;
+  --color-theme-border-default: #FFB000;
+  --color-theme-border-focus: #FFD000;
+  --color-theme-error: #FF0000;
 }
 
 /* DOS-inspired custom styles */
@@ -28,14 +29,14 @@
   }
 
   html, body {
-    background-color: var(--dos-black);
-    color: var(--dos-amber);
+    background-color: var(--color-theme-background);
+    color: var(--color-theme-text-primary);
     font-family: 'DOS', Consolas, Monaco, monospace;
     min-height: 100vh;
   }
   
   body {
-    text-shadow: 0 0 2px var(--dos-dim-amber);
+    text-shadow: 0 0 2px var(--color-theme-text-secondary);
     position: relative;
   }
 
@@ -68,7 +69,7 @@
     height: 100%;
     background: radial-gradient(
       circle at center,
-      var(--dos-dim-amber) 0%,
+      var(--color-theme-text-secondary) 0%,
       rgba(0, 0, 0, 0.5) 100%
     );
     pointer-events: none;
@@ -79,32 +80,32 @@
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 12px;
-    background-color: var(--dos-black);
+    background-color: var(--color-theme-background);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: var(--dos-amber);
-    border: 2px solid var(--dos-black);
+    background-color: var(--color-theme-text-primary);
+    border: 2px solid var(--color-theme-background);
   }
 
   /* Remove modern input styles */
   input, textarea {
-    background-color: var(--dos-black);
-    border: 2px solid var(--dos-border);
-    color: var(--dos-amber);
+    background-color: var(--color-theme-background);
+    border: 2px solid var(--color-theme-border-default);
+    color: var(--color-theme-text-primary);
     font-family: 'DOS', Consolas, Monaco, monospace;
     outline: none;
   }
 
   input:focus, textarea:focus {
-    border-color: var(--dos-bright-amber);
+    border-color: var(--color-theme-border-focus);
   }
 
   /* Reset button styles */
   button {
     background-color: transparent;
-    border: 2px solid var(--dos-border);
-    color: var(--dos-amber);
+    border: 2px solid var(--color-theme-border-default);
+    color: var(--color-theme-text-primary);
     font-family: 'DOS', Consolas, Monaco, monospace;
     padding: 0.5rem 1rem;
     cursor: pointer;
@@ -112,8 +113,8 @@
   }
 
   button:hover:not(:disabled) {
-    background-color: var(--dos-amber);
-    color: var(--dos-black);
+    background-color: var(--color-theme-text-primary);
+    color: var(--color-theme-background);
   }
 
   button:disabled {
@@ -126,7 +127,7 @@
 .cursor::after {
   content: '_';
   animation: blink 1s step-end infinite;
-  color: var(--dos-amber);
+  color: var(--color-theme-text-primary);
 }
 
 @keyframes blink {

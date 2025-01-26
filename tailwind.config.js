@@ -7,12 +7,19 @@ export default {
   theme: {
     extend: {
       colors: {
-        'dos-black': 'var(--dos-black)',
-        'dos-amber': 'var(--dos-amber)',
-        'dos-bright-amber': 'var(--dos-bright-amber)',
-        'dos-dim-amber': 'var(--dos-dim-amber)',
-        'dos-border': 'var(--dos-border)',
-        'dos-red': 'var(--dos-red)'
+        'theme': {
+          'background': 'var(--color-theme-background)',
+          'text': {
+            'primary': 'var(--color-theme-text-primary)',
+            'secondary': 'var(--color-theme-text-secondary)',
+            'highlight': 'var(--color-theme-text-highlight)'
+          },
+          'border': {
+            'default': 'var(--color-theme-border-default)',
+            'focus': 'var(--color-theme-border-focus)'
+          },
+          'error': 'var(--color-theme-error)'
+        }
       },
       fontFamily: {
         'dos': ['DOS', 'Consolas', 'Monaco', 'monospace']
