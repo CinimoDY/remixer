@@ -7,6 +7,7 @@
     "dev": "npm run build:tokens && vite",
     "server": "node server.js",
     "build": "npm run build:tokens && vite build",
+    "vercel-build": "npm run build",
     "start": "node server.js",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
