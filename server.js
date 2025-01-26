@@ -18,6 +18,20 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+const tweetFromPostPrompt = `
+You are a social media expert and ghostwriter.
+
+You work for a popular blogger, and your job is to take their blog post and come up with a variety of tweets to share ideas from the post.
+
+Since you are a ghostwriter, you need to make sure to follow the style, tone, and voice of the blog post as closely as possible.
+
+Remember: Tweets cannot be longer than 280 characters.
+
+Please return the tweets in a list format, with each tweet on a new line, and be sure to include at least five tweets.
+
+Do not use any hashtags or emojis.
+`;
+
 app.use(cors());
 app.use(express.json());
 
@@ -26,10 +40,10 @@ app.use(express.static(join(__dirname, 'dist')));
 
 app.post('/api/remix', async (req, res) => {
   try {
-    const { text, style } = req.body;
+    const { text } = req.body;
 
-    if (!text || !style) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (!text) {
+      return res.status(400).json({ error: 'Missing required text field' });
     }
 
     const completion = await openai.chat.completions.create({
@@ -37,11 +51,11 @@ app.post('/api/remix', async (req, res) => {
       messages: [
         {
           role: "system",
-          content: "You are a helpful content remixing assistant."
+          content: tweetFromPostPrompt
         },
         {
           role: "user",
-          content: `Rewrite the following text in a ${style} style: "${text}"`
+          content: text
         }
       ],
     });
