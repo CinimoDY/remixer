@@ -4,6 +4,7 @@ function App() {
   const [inputText, setInputText] = useState('')
   const [outputText, setOutputText] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   const remixStyles = [
     { id: 'professional', label: 'Professional', color: 'blue' },
@@ -13,6 +14,7 @@ function App() {
 
   const handleRemix = async (style) => {
     setIsLoading(true);
+    setError(null);
     try {
       const response = await fetch('/api/remix', {
         method: 'POST',
@@ -34,7 +36,8 @@ function App() {
       setOutputText(data.remixedText);
     } catch (error) {
       console.error('Detailed error:', error);
-      setOutputText(`Error: ${error.message}`);
+      setError(error.message);
+      setOutputText('');
     } finally {
       setIsLoading(false);
     }
@@ -52,6 +55,7 @@ function App() {
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           placeholder="Paste your content here..."
+          disabled={isLoading}
         />
       </div>
 
@@ -60,14 +64,21 @@ function App() {
         {remixStyles.map((style) => (
           <button
             key={style.id}
-            className={`px-4 py-2 bg-${style.color}-500 text-white rounded hover:bg-${style.color}-600 transition-colors`}
+            className={`px-4 py-2 bg-${style.color}-500 text-white rounded hover:bg-${style.color}-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed`}
             onClick={() => handleRemix(style.id)}
-            disabled={isLoading}
+            disabled={isLoading || !inputText.trim()}
           >
             {style.label}
           </button>
         ))}
       </div>
+
+      {/* Error Display */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+          {error}
+        </div>
+      )}
 
       {/* Output Section */}
       <div className="border p-4 rounded min-h-[200px]">
