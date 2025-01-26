@@ -7,7 +7,7 @@
   src: url('/fonts/Perfect DOS VGA 437 Win.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
-  font-display: swap;
+  font-display: block;
 }
 
 :root {
@@ -21,16 +21,22 @@
 
 /* DOS-inspired custom styles */
 @layer base {
-  html {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
     background-color: var(--dos-black);
+    color: var(--dos-amber);
+    font-family: 'DOS', Consolas, Monaco, monospace;
+    min-height: 100vh;
   }
   
   body {
-    @apply bg-dos-black text-dos-amber font-dos;
     text-shadow: 0 0 2px var(--dos-dim-amber);
     position: relative;
-    margin: 0;
-    min-height: 100vh;
   }
 
   /* CRT screen effect */
@@ -83,19 +89,31 @@
 
   /* Remove modern input styles */
   input, textarea {
-    @apply bg-dos-black border-dos-border focus:ring-0;
+    background-color: var(--dos-black);
+    border: 2px solid var(--dos-border);
+    color: var(--dos-amber);
+    font-family: 'DOS', Consolas, Monaco, monospace;
+    outline: none;
+  }
+
+  input:focus, textarea:focus {
+    border-color: var(--dos-bright-amber);
   }
 
   /* Reset button styles */
   button {
-    @apply bg-transparent border-2 border-dos-border text-dos-amber font-dos;
+    background-color: transparent;
+    border: 2px solid var(--dos-border);
+    color: var(--dos-amber);
+    font-family: 'DOS', Consolas, Monaco, monospace;
     padding: 0.5rem 1rem;
     cursor: pointer;
     transition: all 0.2s;
   }
 
   button:hover:not(:disabled) {
-    @apply bg-dos-amber text-dos-black;
+    background-color: var(--dos-amber);
+    color: var(--dos-black);
   }
 
   button:disabled {
@@ -107,6 +125,11 @@
 /* Blinking cursor animation */
 .cursor::after {
   content: '_';
-  @apply animate-cursor-blink;
+  animation: blink 1s step-end infinite;
   color: var(--dos-amber);
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }

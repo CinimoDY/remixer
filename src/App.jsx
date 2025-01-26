@@ -44,11 +44,11 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-dos-black text-dos-amber font-dos p-unit">
-      <div className="container mx-auto max-w-content">
+    <div className="min-h-screen bg-dos-black text-dos-amber font-dos p-4">
+      <div className="container mx-auto max-w-4xl">
         {/* DOS-style Header */}
-        <div className="mb-8 border-2 border-dos-border p-unit">
-          <h1 className="text-4xl font-bold text-center leading-base">
+        <div className="mb-8 border-2 border-dos-border p-4">
+          <h1 className="text-4xl font-bold text-center">
             ╔═══════════════════╗
             <br />
             ║  Content Remixer  ║
@@ -61,7 +61,7 @@ function App() {
         </div>
         
         {/* Main Terminal Window */}
-        <div className="border-2 border-dos-border p-unit">
+        <div className="border-2 border-dos-border p-4">
           {/* Input Section */}
           <div className="mb-6">
             <label className="block mb-2 text-dos-bright-amber">
