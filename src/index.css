@@ -1,72 +1,105 @@
+@import './styles/_variables.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+@font-face {
+  font-family: 'DOS';
+  src: url('/fonts/Perfect DOS VGA 437.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+/* DOS-inspired custom styles */
+@layer base {
+  html {
+    background-color: var(--colors-dos-black);
   }
-  a:hover {
-    color: #747bff;
+  
+  body {
+    @apply bg-dos-black text-dos-amber font-dos;
+    text-shadow: 0 0 2px var(--colors-dos-dim);
+    position: relative;
+    margin: 0;
+    min-height: 100vh;
   }
+
+  /* CRT screen effect */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.15) 0px,
+      rgba(0, 0, 0, 0.15) 1px,
+      transparent 1px,
+      transparent 2px
+    );
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  /* Amber monitor glow */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+      circle at center,
+      var(--colors-dos-dim) 0%,
+      rgba(0, 0, 0, 0.5) 100%
+    );
+    pointer-events: none;
+    z-index: 998;
+    opacity: 0.1;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 12px;
+    background-color: var(--colors-dos-black);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--colors-dos-yellow);
+    border: 2px solid var(--colors-dos-black);
+  }
+
+  /* Remove modern input styles */
+  input, textarea {
+    @apply bg-dos-black border-dos-border focus:ring-0;
+  }
+
+  /* Reset button styles */
   button {
-    background-color: #f9f9f9;
+    @apply bg-transparent border-2 border-dos-border text-dos-amber font-dos;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
   }
+
+  button:hover:not(:disabled) {
+    @apply bg-dos-amber text-dos-black;
+  }
+
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+/* Blinking cursor animation */
+.cursor::after {
+  content: '_';
+  @apply animate-cursor-blink;
+  color: var(--colors-dos-yellow);
 }

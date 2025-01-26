@@ -1,0 +1,34 @@
+{
+  "color": {
+    "dos": {
+      "black": { "value": "#000000" },
+      "green": { "value": "#00ff00" },
+      "brightGreen": { "value": "#33ff33" },
+      "dim": { "value": "#00cc00" },
+      "red": { "value": "#ff0000" }
+    }
+  },
+  "typography": {
+    "fontFamilies": {
+      "dos": { "value": "DOS, Consolas, Monaco, monospace" }
+    },
+    "fontSize": {
+      "terminal": { "value": "16px" },
+      "header": { "value": "24px" }
+    }
+  },
+  "spacing": {
+    "terminal": {
+      "padding": { "value": "16px" },
+      "border": { "value": "2px" }
+    }
+  },
+  "animation": {
+    "cursor": {
+      "blink": {
+        "duration": { "value": "1s" },
+        "timing": { "value": "step-end" }
+      }
+    }
+  }
+} 

@@ -1,0 +1,17 @@
+{
+  "color": {
+    "theme": {
+      "background": { "value": "{color.base.black.value}" },
+      "text": {
+        "primary": { "value": "{color.base.amber.200.value}" },
+        "secondary": { "value": "{color.base.amber.100.value}" },
+        "highlight": { "value": "{color.base.amber.300.value}" }
+      },
+      "border": {
+        "default": { "value": "{color.base.amber.200.value}" },
+        "focus": { "value": "{color.base.amber.300.value}" }
+      },
+      "error": { "value": "{color.base.red.value}" }
+    }
+  }
+} 

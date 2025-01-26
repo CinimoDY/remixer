@@ -1,0 +1,13 @@
+{
+  "color": {
+    "base": {
+      "black": { "value": "#000000" },
+      "amber": {
+        "100": { "value": "#FFB000" },
+        "200": { "value": "#FFB000" },
+        "300": { "value": "#FFD000" }
+      },
+      "red": { "value": "#FF0000" }
+    }
+  }
+} 

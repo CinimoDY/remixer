@@ -2,8 +2,13 @@ import express from 'express';
 import cors from 'cors';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const port = 3001;
@@ -15,6 +20,9 @@ const openai = new OpenAI({
 
 app.use(cors());
 app.use(express.json());
+
+// Serve static files from the dist directory
+app.use(express.static(join(__dirname, 'dist')));
 
 app.post('/api/remix', async (req, res) => {
   try {
@@ -46,6 +54,11 @@ app.post('/api/remix', async (req, res) => {
       details: error.message 
     });
   }
+});
+
+// Handle all other routes by serving index.html
+app.get('*', (req, res) => {
+  res.sendFile(join(__dirname, 'dist', 'index.html'));
 });
 
 app.listen(port, () => {
