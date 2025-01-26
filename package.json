@@ -11,11 +11,12 @@
     "start": "node server.js",
     "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
-    "build:tokens": "style-dictionary build --config config.style-dictionary.js"
+    "build:tokens": "node -r esm ./node_modules/.bin/style-dictionary build --config config.style-dictionary.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "esm": "^3.2.25",
     "express": "^4.21.2",
     "openai": "^4.80.1",
     "react": "^18.2.0",

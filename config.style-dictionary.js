@@ -1,9 +1,6 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+const StyleDictionary = require('style-dictionary');
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-export default {
+module.exports = {
   source: [
     // Use local token files as source of truth
     "src/tokens/**/*.json"
