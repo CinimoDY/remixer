@@ -7,15 +7,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        'dos-black': 'var(--global-colors-dos-black)',
-        'dos-amber': 'var(--global-colors-dos-yellow)',
-        'dos-bright-amber': 'var(--global-colors-dos-bright)',
-        'dos-dim-amber': 'var(--global-colors-dos-dim)',
-        'dos-border': 'var(--global-colors-dos-border)',
-        'dos-red': '#FF0000'
+        'dos-black': 'var(--dos-black)',
+        'dos-amber': 'var(--dos-amber)',
+        'dos-bright-amber': 'var(--dos-bright-amber)',
+        'dos-dim-amber': 'var(--dos-dim-amber)',
+        'dos-border': 'var(--dos-border)',
+        'dos-red': 'var(--dos-red)'
       },
       fontFamily: {
-        'dos': 'var(--typography-family-dos)'
+        'dos': ['DOS', 'Consolas', 'Monaco', 'monospace']
       },
       fontSize: {
         'base': 'var(--typography-size-base)',

@@ -1,26 +1,33 @@
-@import './styles/_variables.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @font-face {
   font-family: 'DOS';
-  src: url('/fonts/Perfect DOS VGA 437.ttf') format('truetype');
+  src: url('/fonts/Perfect DOS VGA 437 Win.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
   font-display: swap;
 }
 
+:root {
+  --dos-black: #000000;
+  --dos-amber: #FFB000;
+  --dos-bright-amber: #FFD000;
+  --dos-dim-amber: rgba(255, 176, 0, 0.7);
+  --dos-border: #FFB000;
+  --dos-red: #FF0000;
+}
+
 /* DOS-inspired custom styles */
 @layer base {
   html {
-    background-color: var(--global-colors-dos-black);
+    background-color: var(--dos-black);
   }
   
   body {
     @apply bg-dos-black text-dos-amber font-dos;
-    text-shadow: 0 0 2px var(--global-colors-dos-dim);
+    text-shadow: 0 0 2px var(--dos-dim-amber);
     position: relative;
     margin: 0;
     min-height: 100vh;
@@ -55,7 +62,7 @@
     height: 100%;
     background: radial-gradient(
       circle at center,
-      var(--global-colors-dos-dim) 0%,
+      var(--dos-dim-amber) 0%,
       rgba(0, 0, 0, 0.5) 100%
     );
     pointer-events: none;
@@ -66,12 +73,12 @@
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 12px;
-    background-color: var(--global-colors-dos-black);
+    background-color: var(--dos-black);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: var(--global-colors-dos-yellow);
-    border: 2px solid var(--global-colors-dos-black);
+    background-color: var(--dos-amber);
+    border: 2px solid var(--dos-black);
   }
 
   /* Remove modern input styles */
@@ -101,5 +108,5 @@
 .cursor::after {
   content: '_';
   @apply animate-cursor-blink;
-  color: var(--global-colors-dos-yellow);
+  color: var(--dos-amber);
 }
