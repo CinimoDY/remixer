@@ -15,12 +15,12 @@
 /* DOS-inspired custom styles */
 @layer base {
   html {
-    background-color: var(--colors-dos-black);
+    background-color: var(--global-colors-dos-black);
   }
   
   body {
     @apply bg-dos-black text-dos-amber font-dos;
-    text-shadow: 0 0 2px var(--colors-dos-dim);
+    text-shadow: 0 0 2px var(--global-colors-dos-dim);
     position: relative;
     margin: 0;
     min-height: 100vh;
@@ -55,7 +55,7 @@
     height: 100%;
     background: radial-gradient(
       circle at center,
-      var(--colors-dos-dim) 0%,
+      var(--global-colors-dos-dim) 0%,
       rgba(0, 0, 0, 0.5) 100%
     );
     pointer-events: none;
@@ -66,12 +66,12 @@
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 12px;
-    background-color: var(--colors-dos-black);
+    background-color: var(--global-colors-dos-black);
   }
 
   ::-webkit-scrollbar-thumb {
-    background-color: var(--colors-dos-yellow);
-    border: 2px solid var(--colors-dos-black);
+    background-color: var(--global-colors-dos-yellow);
+    border: 2px solid var(--global-colors-dos-black);
   }
 
   /* Remove modern input styles */
@@ -101,5 +101,5 @@
 .cursor::after {
   content: '_';
   @apply animate-cursor-blink;
-  color: var(--colors-dos-yellow);
+  color: var(--global-colors-dos-yellow);
 }

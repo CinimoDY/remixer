@@ -7,11 +7,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        'dos-black': 'var(--colors-dos-black)',
-        'dos-amber': 'var(--colors-dos-yellow)',
-        'dos-bright-amber': 'var(--colors-dos-bright)',
-        'dos-dim-amber': 'var(--colors-dos-dim)',
-        'dos-border': 'var(--colors-dos-border)',
+        'dos-black': 'var(--global-colors-dos-black)',
+        'dos-amber': 'var(--global-colors-dos-yellow)',
+        'dos-bright-amber': 'var(--global-colors-dos-bright)',
+        'dos-dim-amber': 'var(--global-colors-dos-dim)',
+        'dos-border': 'var(--global-colors-dos-border)',
         'dos-red': '#FF0000'
       },
       fontFamily: {
@@ -24,8 +24,8 @@ export default {
         '2xl': 'var(--typography-size-2xl)'
       },
       spacing: {
-        'unit': 'var(--spacing-unit)',
-        'title': 'var(--spacing-title-height)'
+        'unit': 'var(--global-spacing-unit)',
+        'title': 'var(--global-spacing-title-height)'
       },
       borderWidth: {
         'thin': 'var(--spacing-border-width-thin)',
@@ -42,10 +42,10 @@ export default {
         },
       },
       maxWidth: {
-        'content': 'var(--dimension-content-max-width)'
+        'content': 'var(--global-dimension-content-max-width)'
       },
       lineHeight: {
-        'base': 'var(--typography-line-height-base)'
+        'base': 'var(--global-typography-line-height-base)'
       }
     },
   },
