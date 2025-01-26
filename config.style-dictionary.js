@@ -1,12 +1,9 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+const path = require('path');
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
-export default {
+module.exports = {
   source: [
-    // Point to rizomorf's tokens file
-    path.join(process.env.RIZOMORF_PATH || path.join(__dirname, '../rizomorf'), 'src/design-system/tokens/tokens.json')
+    // Use local token files as source of truth
+    "src/tokens/**/*.json"
   ],
   platforms: {
     css: {
@@ -14,7 +11,10 @@ export default {
       buildPath: 'src/styles/',
       files: [{
         destination: '_variables.css',
-        format: 'css/variables'
+        format: 'css/variables',
+        options: {
+          showFileHeader: false
+        }
       }]
     },
     js: {
