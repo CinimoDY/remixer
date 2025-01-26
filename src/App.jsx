@@ -6,13 +6,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  const remixStyles = [
-    { id: 'professional', label: 'Professional', color: 'primary' },
-    { id: 'casual', label: 'Casual', color: 'secondary' },
-    { id: 'funny', label: 'Funny', color: 'accent' },
-  ];
-
-  const handleRemix = async (style) => {
+  const handleRemix = async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -22,8 +16,7 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: inputText,
-          style: style
+          text: inputText
         })
       });
 
@@ -56,7 +49,7 @@ function App() {
             ╚═══════════════════╝
           </h1>
           <p className="text-center mt-2 cursor">
-            C:\APPS\REMIXER&gt; Transform your text into different styles
+            C:\APPS\REMIXER&gt; Transform your text with AI magic
           </p>
         </div>
         
@@ -78,21 +71,18 @@ function App() {
             />
           </div>
 
-          {/* Command Buttons */}
-          <div className="flex flex-wrap gap-4 mb-6">
-            {remixStyles.map((style) => (
-              <button
-                key={style.id}
-                className={`px-4 py-2 border-2 border-dos-border 
-                          hover:bg-dos-amber hover:text-dos-black
-                          transition-colors disabled:opacity-50 
-                          disabled:cursor-not-allowed`}
-                onClick={() => handleRemix(style.id)}
-                disabled={isLoading || !inputText.trim()}
-              >
-                [{style.label}]
-              </button>
-            ))}
+          {/* Remix Button */}
+          <div className="flex justify-center mb-6">
+            <button
+              className="px-6 py-2 border-2 border-dos-border 
+                        hover:bg-dos-amber hover:text-dos-black
+                        transition-colors disabled:opacity-50 
+                        disabled:cursor-not-allowed"
+              onClick={handleRemix}
+              disabled={isLoading || !inputText.trim()}
+            >
+              [Remix Content]
+            </button>
           </div>
 
           {/* Error Display */}
