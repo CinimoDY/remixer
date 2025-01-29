@@ -19,6 +19,10 @@ function App() {
   const [showHints, setShowHints] = useState(true)
   const [supabaseError, setSupabaseError] = useState(null)
   const [contentType, setContentType] = useState(CONTENT_TYPES.TWITTER)
+  const [collapsedSections, setCollapsedSections] = useState({
+    twitter: false,
+    linkedin: false
+  })
 
   // Fetch saved tweets on component mount
   useEffect(() => {
@@ -213,6 +217,14 @@ function App() {
     return heightByContent;
   };
 
+  // Toggle section collapse
+  const toggleSection = (section) => {
+    setCollapsedSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }))
+  }
+
   return (
     <div className="min-h-screen bg-theme-background text-theme-text-primary font-dos p-2 sm:p-4">
       {supabaseError && (
@@ -236,7 +248,7 @@ function App() {
               <span className="inline sm:hidden">╚═══════╝</span>
             </h1>
             <p className="text-center mt-2 text-theme-text-secondary text-sm sm:text-base">
-              D:\APPS\REMIXER&gt; Generate Tweets from longer Posts
+              D:\APPS\REMIXER&gt; Generate Twitter and LinkedIn Posts from your Articles
             </p>
           </div>
           
@@ -261,7 +273,7 @@ function App() {
               </div>
             </div>
 
-            {/* Remix Buttons */}
+            {/* Mode Buttons */}
             <div className="flex justify-center gap-4 mb-4 sm:mb-6">
               <button
                 className={`px-4 sm:px-6 py-2 border-2 
@@ -272,12 +284,11 @@ function App() {
                           disabled:cursor-not-allowed`}
                 onClick={() => {
                   setContentType(CONTENT_TYPES.TWITTER)
-                  setParsedTweets([])
-                  setOutputText('')
+                  handleRemix()
                 }}
-                disabled={isLoading}
+                disabled={isLoading || !inputText.trim()}
               >
-                [Twitter Mode]
+                [Generate for Twitter]
               </button>
               <button
                 className={`px-4 sm:px-6 py-2 border-2
@@ -288,25 +299,11 @@ function App() {
                           disabled:cursor-not-allowed`}
                 onClick={() => {
                   setContentType(CONTENT_TYPES.LINKEDIN)
-                  setParsedTweets([])
-                  setOutputText('')
+                  handleRemix()
                 }}
-                disabled={isLoading}
-              >
-                [LinkedIn Mode]
-              </button>
-            </div>
-            <div className="flex justify-center mb-4 sm:mb-6">
-              <button
-                className="px-4 sm:px-6 py-2 border-2 border-theme-border-default 
-                          text-theme-text-highlight text-sm sm:text-base
-                          hover:bg-theme-text-primary hover:text-theme-background
-                          transition-colors disabled:opacity-50 
-                          disabled:cursor-not-allowed"
-                onClick={handleRemix}
                 disabled={isLoading || !inputText.trim()}
               >
-                [Remix Content]
+                [Generate for LinkedIn]
               </button>
             </div>
 
@@ -405,6 +402,7 @@ function App() {
           ${isSidebarVisible ? 'max-h-[80vh] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'} 
           lg:max-h-none lg:opacity-100
           mt-2 lg:mt-0
+          lg:min-w-[350px]
         `}>
           {/* Desktop Sidebar Toggle */}
           <div className="hidden lg:block">
@@ -421,7 +419,7 @@ function App() {
 
           {/* Saved Content Panel */}
           <div className={`
-            w-full lg:w-80
+            w-full lg:w-auto
             border-2 border-theme-border-default
             bg-theme-background
             p-4 flex flex-col
@@ -434,10 +432,17 @@ function App() {
 
             {/* Twitter Section */}
             <div className="mb-6">
-              <h3 className="text-theme-text-highlight mb-2 text-sm sm:text-base">
-                ├── Twitter
-              </h3>
-              <div className="space-y-4 max-h-[30vh] overflow-y-auto">
+              <button 
+                onClick={() => toggleSection('twitter')}
+                className="w-full text-left text-theme-text-highlight mb-2 text-sm sm:text-base hover:text-theme-text-primary transition-colors"
+              >
+                {collapsedSections.twitter ? '├─► Twitter' : '├─▼ Twitter'}
+              </button>
+              <div className={`
+                space-y-4 max-h-[30vh] overflow-y-auto
+                transition-all duration-300
+                ${collapsedSections.twitter ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[30vh] opacity-100'}
+              `}>
                 {savedContent[CONTENT_TYPES.TWITTER].map((tweet) => (
                   <div 
                     key={tweet.id}
@@ -569,10 +574,17 @@ function App() {
 
             {/* LinkedIn Section */}
             <div>
-              <h3 className="text-theme-text-highlight mb-2 text-sm sm:text-base">
-                └── LinkedIn
-              </h3>
-              <div className="space-y-4 max-h-[30vh] overflow-y-auto">
+              <button 
+                onClick={() => toggleSection('linkedin')}
+                className="w-full text-left text-theme-text-highlight mb-2 text-sm sm:text-base hover:text-theme-text-primary transition-colors"
+              >
+                {collapsedSections.linkedin ? '└─► LinkedIn' : '└─▼ LinkedIn'}
+              </button>
+              <div className={`
+                space-y-4 max-h-[30vh] overflow-y-auto
+                transition-all duration-300
+                ${collapsedSections.linkedin ? 'max-h-0 opacity-0 overflow-hidden' : 'max-h-[30vh] opacity-100'}
+              `}>
                 {savedContent[CONTENT_TYPES.LINKEDIN].map((post) => (
                   <div 
                     key={post.id}
