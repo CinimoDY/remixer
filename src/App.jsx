@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
+import { playGenerateSound, playSaveSound, playEditCompleteSound, playDeleteSound } from './sounds'
 
 function App() {
   const [inputText, setInputText] = useState('')
@@ -42,6 +43,9 @@ function App() {
 
       if (error) throw error
       
+      // Play save sound
+      playSaveSound()
+      
       // Refresh the saved tweets list
       await fetchSavedTweets()
     } catch (error) {
@@ -59,6 +63,9 @@ function App() {
         .eq('id', id)
 
       if (error) throw error
+      
+      // Play delete sound
+      playDeleteSound()
       
       // Refresh the saved tweets list
       await fetchSavedTweets()
@@ -87,6 +94,9 @@ function App() {
         .eq('id', editingTweet.id)
 
       if (error) throw error
+      
+      // Play edit complete sound
+      playEditCompleteSound()
       
       // Refresh the saved tweets list
       await fetchSavedTweets()
@@ -146,6 +156,9 @@ function App() {
 
       setOutputText(data.remixedText);
       setParsedTweets(parseTweets(data.remixedText));
+      
+      // Play generate sound
+      playGenerateSound()
     } catch (error) {
       console.error('Detailed error:', error);
       setError(error.message);
