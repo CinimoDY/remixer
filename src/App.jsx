@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase, checkSupabaseConnection } from './supabaseClient'
+import { supabase, checkSupabaseConnection, CONTENT_TYPES } from './supabaseClient'
 import { playGenerateSound, playSaveSound, playEditCompleteSound, playDeleteSound } from './sounds'
 
 function App() {
@@ -8,17 +8,21 @@ function App() {
   const [parsedTweets, setParsedTweets] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [savedTweets, setSavedTweets] = useState([])
+  const [savedContent, setSavedContent] = useState({
+    [CONTENT_TYPES.TWITTER]: [],
+    [CONTENT_TYPES.LINKEDIN]: []
+  })
   const [isSaving, setIsSaving] = useState(false)
   const [isSidebarVisible, setIsSidebarVisible] = useState(true)
   const [editingTweet, setEditingTweet] = useState(null)
   const [editText, setEditText] = useState('')
   const [showHints, setShowHints] = useState(true)
   const [supabaseError, setSupabaseError] = useState(null)
+  const [contentType, setContentType] = useState(CONTENT_TYPES.TWITTER)
 
   // Fetch saved tweets on component mount
   useEffect(() => {
-    fetchSavedTweets()
+    fetchSavedContent()
   }, [])
 
   // Check Supabase connection on mount and periodically
@@ -37,7 +41,7 @@ function App() {
     return () => clearInterval(interval)
   }, [])
 
-  const fetchSavedTweets = async () => {
+  const fetchSavedContent = async () => {
     try {
       const { data, error } = await supabase
         .from('saved_tweets')
@@ -45,34 +49,46 @@ function App() {
         .order('created_at', { ascending: false })
 
       if (error) throw error
-      setSavedTweets(data || [])
+      
+      // Group content by type
+      const grouped = (data || []).reduce((acc, item) => {
+        const type = item.content_type || CONTENT_TYPES.TWITTER // Default to Twitter for legacy data
+        acc[type] = acc[type] || []
+        acc[type].push(item)
+        return acc
+      }, {
+        [CONTENT_TYPES.TWITTER]: [],
+        [CONTENT_TYPES.LINKEDIN]: []
+      })
+      
+      setSavedContent(grouped)
     } catch (error) {
-      console.error('Error fetching saved tweets:', error)
+      console.error('Error fetching saved content:', error)
     }
   }
 
-  const handleSaveTweet = async (tweet) => {
+  const handleSaveContent = async (content) => {
     setIsSaving(true)
     try {
       const { error } = await supabase
         .from('saved_tweets')
-        .insert([{ content: tweet }])
+        .insert([{ 
+          content: content,
+          content_type: contentType 
+        }])
 
       if (error) throw error
       
-      // Play save sound
       playSaveSound()
-      
-      // Refresh the saved tweets list
-      await fetchSavedTweets()
+      await fetchSavedContent()
     } catch (error) {
-      console.error('Error saving tweet:', error)
+      console.error('Error saving content:', error)
     } finally {
       setIsSaving(false)
     }
   }
 
-  const handleDeleteSavedTweet = async (id) => {
+  const handleDeleteSavedContent = async (id) => {
     try {
       const { error } = await supabase
         .from('saved_tweets')
@@ -85,7 +101,7 @@ function App() {
       playDeleteSound()
       
       // Refresh the saved tweets list
-      await fetchSavedTweets()
+      await fetchSavedContent()
     } catch (error) {
       console.error('Error deleting tweet:', error)
     }
@@ -116,7 +132,7 @@ function App() {
       playEditCompleteSound()
       
       // Refresh the saved tweets list
-      await fetchSavedTweets()
+      await fetchSavedContent()
       handleCancelEdit()
     } catch (error) {
       console.error('Error updating tweet:', error)
@@ -151,9 +167,9 @@ function App() {
   };
 
   const handleRemix = async () => {
-    setIsLoading(true);
-    setError(null);
-    setParsedTweets([]);
+    setIsLoading(true)
+    setError(null)
+    setParsedTweets([])
     try {
       const response = await fetch('/api/remix', {
         method: 'POST',
@@ -161,29 +177,28 @@ function App() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          text: inputText
+          text: inputText,
+          contentType
         })
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
       
       if (!response.ok) {
-        throw new Error(data.error || data.details || 'Failed to remix content');
+        throw new Error(data.error || data.details || 'Failed to remix content')
       }
 
-      setOutputText(data.remixedText);
-      setParsedTweets(parseTweets(data.remixedText));
-      
-      // Play generate sound
+      setOutputText(data.remixedText)
+      setParsedTweets(parseTweets(data.remixedText))
       playGenerateSound()
     } catch (error) {
-      console.error('Detailed error:', error);
-      setError(error.message);
-      setOutputText('');
+      console.error('Detailed error:', error)
+      setError(error.message)
+      setOutputText('')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   const getTweetCharCount = (tweet) => {
     return tweet.length;
@@ -246,7 +261,41 @@ function App() {
               </div>
             </div>
 
-            {/* Remix Button */}
+            {/* Remix Buttons */}
+            <div className="flex justify-center gap-4 mb-4 sm:mb-6">
+              <button
+                className={`px-4 sm:px-6 py-2 border-2 
+                          ${contentType === CONTENT_TYPES.TWITTER ? 'border-theme-text-highlight' : 'border-theme-border-default'}
+                          text-theme-text-highlight text-sm sm:text-base
+                          hover:bg-theme-text-primary hover:text-theme-background
+                          transition-colors disabled:opacity-50 
+                          disabled:cursor-not-allowed`}
+                onClick={() => {
+                  setContentType(CONTENT_TYPES.TWITTER)
+                  setParsedTweets([])
+                  setOutputText('')
+                }}
+                disabled={isLoading}
+              >
+                [Twitter Mode]
+              </button>
+              <button
+                className={`px-4 sm:px-6 py-2 border-2
+                          ${contentType === CONTENT_TYPES.LINKEDIN ? 'border-theme-text-highlight' : 'border-theme-border-default'}
+                          text-theme-text-highlight text-sm sm:text-base
+                          hover:bg-theme-text-primary hover:text-theme-background
+                          transition-colors disabled:opacity-50 
+                          disabled:cursor-not-allowed`}
+                onClick={() => {
+                  setContentType(CONTENT_TYPES.LINKEDIN)
+                  setParsedTweets([])
+                  setOutputText('')
+                }}
+                disabled={isLoading}
+              >
+                [LinkedIn Mode]
+              </button>
+            </div>
             <div className="flex justify-center mb-4 sm:mb-6">
               <button
                 className="px-4 sm:px-6 py-2 border-2 border-theme-border-default 
@@ -271,7 +320,7 @@ function App() {
             {/* Output Section */}
             <div>
               <label className="block mb-2 text-theme-text-highlight text-sm sm:text-base">
-                D:\OUTPUT&gt; Generated tweets:
+                D:\OUTPUT&gt; Generated {contentType === CONTENT_TYPES.TWITTER ? 'tweets' : 'posts'}:
               </label>
               <div className="space-y-4">
                 {isLoading ? (
@@ -300,7 +349,7 @@ function App() {
                           </span>
                           <div className="flex gap-2 w-full sm:w-auto">
                             <button
-                              onClick={() => handleSaveTweet(tweet)}
+                              onClick={() => handleSaveContent(tweet)}
                               className="flex-1 sm:flex-none px-3 py-1 border-2 border-theme-border-default
                                        text-theme-text-highlight text-sm
                                        hover:bg-theme-text-primary hover:text-theme-background
@@ -345,7 +394,7 @@ function App() {
                      hover:bg-theme-text-primary hover:text-theme-background
                      transition-colors whitespace-nowrap bg-theme-background"
           >
-            [Saved Tweets {isSidebarVisible ? '▼' : '▲'}]
+            [Saved Content {isSidebarVisible ? '▼' : '▲'}]
           </button>
         </div>
 
@@ -370,7 +419,7 @@ function App() {
             </button>
           </div>
 
-          {/* Saved Tweets Panel */}
+          {/* Saved Content Panel */}
           <div className={`
             w-full lg:w-80
             border-2 border-theme-border-default
@@ -380,135 +429,277 @@ function App() {
             ${isSidebarVisible ? 'opacity-100' : 'lg:opacity-0 lg:w-0 lg:p-0 lg:border-0'}
           `}>
             <h2 className="text-lg sm:text-xl text-theme-text-highlight mb-4 border-b-2 border-theme-border-default pb-2">
-              D:\SAVED&gt; Saved Tweets
+              D:\SAVED&gt; Saved Content
             </h2>
-            <div className="space-y-4 flex-1 overflow-y-auto">
-              {savedTweets.map((tweet) => (
-                <div 
-                  key={tweet.id}
-                  className="p-2 sm:p-3 border-2 border-theme-border-default hover:border-theme-border-focus
-                           transition-colors bg-theme-background"
-                >
-                  <div className="flex flex-col gap-2">
-                    {editingTweet?.id === tweet.id ? (
-                      <div className="flex flex-col gap-2">
-                        {showHints && (
-                          <div className="text-theme-text-secondary text-xs border-2 border-theme-border-default p-2 mb-2">
-                            <div className="flex justify-between items-start mb-1">
-                              <p>╔════ Keyboard Shortcuts ════╗</p>
+
+            {/* Twitter Section */}
+            <div className="mb-6">
+              <h3 className="text-theme-text-highlight mb-2 text-sm sm:text-base">
+                ├── Twitter
+              </h3>
+              <div className="space-y-4 max-h-[30vh] overflow-y-auto">
+                {savedContent[CONTENT_TYPES.TWITTER].map((tweet) => (
+                  <div 
+                    key={tweet.id}
+                    className="p-2 sm:p-3 border-2 border-theme-border-default hover:border-theme-border-focus
+                             transition-colors bg-theme-background"
+                  >
+                    <div className="flex flex-col gap-2">
+                      {editingTweet?.id === tweet.id ? (
+                        <div className="flex flex-col gap-2">
+                          {showHints && (
+                            <div className="text-theme-text-secondary text-xs border-2 border-theme-border-default p-2 mb-2">
+                              <div className="flex justify-between items-start mb-1">
+                                <p>╔════ Keyboard Shortcuts ════╗</p>
+                                <button
+                                  onClick={() => setShowHints(false)}
+                                  className="text-theme-text-highlight hover:text-theme-error ml-4"
+                                >
+                                  [x]
+                                </button>
+                              </div>
+                              <div className="pl-2">
+                                <p>• Ctrl+Enter - Save changes</p>
+                                <p>• Esc - Cancel editing</p>
+                              </div>
+                              <p>╚═══════════════════════════╝</p>
+                            </div>
+                          )}
+                          <div className="relative">
+                            <textarea
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              onKeyDown={(e) => {
+                                handleEditKeyDown(e);
+                                if (e.key === 'Escape') {
+                                  handleCancelEdit();
+                                }
+                              }}
+                              style={{ height: `${getTextareaHeight(editText)}px` }}
+                              className="w-full p-2 bg-theme-background border-2 border-theme-border-default 
+                                       text-theme-text-primary font-dos resize-none focus:outline-none 
+                                       focus:border-theme-border-focus text-sm sm:text-base
+                                       overflow-y-auto transition-all duration-200"
+                              autoFocus
+                            />
+                            <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                              <span className="text-theme-text-secondary text-xs">
+                                {getTweetCharCount(editText)} chars
+                              </span>
+                              <span className="animate-pulse text-theme-text-primary">█</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between border-t border-theme-border-default pt-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-theme-text-secondary text-xs">
+                                {showHints ? '↑ Pro tips above' : '[?] Press ? for help'}
+                              </span>
+                            </div>
+                            <div className="flex gap-2">
                               <button
-                                onClick={() => setShowHints(false)}
-                                className="text-theme-text-highlight hover:text-theme-error ml-4"
+                                onClick={handleCancelEdit}
+                                className="px-2 py-1 border-2 border-theme-border-default
+                                         text-theme-text-highlight text-sm
+                                         hover:bg-theme-text-primary hover:text-theme-background
+                                         transition-colors"
                               >
-                                [x]
+                                [Cancel]
+                              </button>
+                              <button
+                                onClick={handleSaveEdit}
+                                className="px-2 py-1 border-2 border-theme-border-default
+                                         text-theme-text-highlight text-sm
+                                         hover:bg-theme-text-primary hover:text-theme-background
+                                         transition-colors"
+                              >
+                                [Save]
                               </button>
                             </div>
-                            <div className="pl-2">
-                              <p>• Ctrl+Enter - Save changes</p>
-                              <p>• Esc - Cancel editing</p>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-theme-text-primary break-words text-sm sm:text-base">{tweet.content}</p>
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 mt-1 gap-2 border-t border-theme-border-default">
+                            <span className="text-theme-text-secondary text-xs sm:text-sm">
+                              {getTweetCharCount(tweet.content)} chars
+                            </span>
+                            <div className="flex gap-2 w-full sm:w-auto">
+                              <button
+                                onClick={() => handleEditClick(tweet)}
+                                className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
+                                         text-theme-text-highlight text-sm
+                                         hover:bg-theme-text-primary hover:text-theme-background
+                                         transition-colors"
+                              >
+                                [Edit]
+                              </button>
+                              <button
+                                onClick={() => handleTweetClick(tweet.content)}
+                                className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
+                                         text-theme-text-highlight text-sm
+                                         hover:bg-theme-text-primary hover:text-theme-background
+                                         transition-colors"
+                              >
+                                [Tweet]
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSavedContent(tweet.id)}
+                                className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
+                                         text-theme-error text-sm
+                                         hover:bg-theme-error hover:text-theme-background
+                                         transition-colors"
+                              >
+                                [Del]
+                              </button>
                             </div>
-                            <p>╚═══════════════════════════╝</p>
                           </div>
-                        )}
-                        <div className="relative">
-                          <textarea
-                            value={editText}
-                            onChange={(e) => setEditText(e.target.value)}
-                            onKeyDown={(e) => {
-                              handleEditKeyDown(e);
-                              if (e.key === 'Escape') {
-                                handleCancelEdit();
-                              }
-                            }}
-                            style={{ height: `${getTextareaHeight(editText)}px` }}
-                            className="w-full p-2 bg-theme-background border-2 border-theme-border-default 
-                                     text-theme-text-primary font-dos resize-none focus:outline-none 
-                                     focus:border-theme-border-focus text-sm sm:text-base
-                                     overflow-y-auto transition-all duration-200"
-                            autoFocus
-                          />
-                          <div className="absolute bottom-2 right-2 flex items-center gap-2">
-                            <span className="text-theme-text-secondary text-xs">
-                              {getTweetCharCount(editText)} chars
-                            </span>
-                            <span className="animate-pulse text-theme-text-primary">█</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between border-t border-theme-border-default pt-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-theme-text-secondary text-xs">
-                              {showHints ? '↑ Pro tips above' : '[?] Press ? for help'}
-                            </span>
-                          </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={handleCancelEdit}
-                              className="px-2 py-1 border-2 border-theme-border-default
-                                       text-theme-text-highlight text-sm
-                                       hover:bg-theme-text-primary hover:text-theme-background
-                                       transition-colors"
-                            >
-                              [Cancel]
-                            </button>
-                            <button
-                              onClick={handleSaveEdit}
-                              className="px-2 py-1 border-2 border-theme-border-default
-                                       text-theme-text-highlight text-sm
-                                       hover:bg-theme-text-primary hover:text-theme-background
-                                       transition-colors"
-                            >
-                              [Save]
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      <>
-                        <p className="text-theme-text-primary break-words text-sm sm:text-base">{tweet.content}</p>
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 mt-1 gap-2 border-t border-theme-border-default">
-                          <span className="text-theme-text-secondary text-xs sm:text-sm">
-                            {getTweetCharCount(tweet.content)} chars
-                          </span>
-                          <div className="flex gap-2 w-full sm:w-auto">
-                            <button
-                              onClick={() => handleEditClick(tweet)}
-                              className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
-                                       text-theme-text-highlight text-sm
-                                       hover:bg-theme-text-primary hover:text-theme-background
-                                       transition-colors"
-                            >
-                              [Edit]
-                            </button>
-                            <button
-                              onClick={() => handleTweetClick(tweet.content)}
-                              className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
-                                       text-theme-text-highlight text-sm
-                                       hover:bg-theme-text-primary hover:text-theme-background
-                                       transition-colors"
-                            >
-                              [Tweet]
-                            </button>
-                            <button
-                              onClick={() => handleDeleteSavedTweet(tweet.id)}
-                              className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
-                                       text-theme-error text-sm
-                                       hover:bg-theme-error hover:text-theme-background
-                                       transition-colors"
-                            >
-                              [Del]
-                            </button>
-                          </div>
-                        </div>
-                      </>
-                    )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
-              {savedTweets.length === 0 && (
-                <div className="text-theme-text-secondary text-center p-4 text-sm sm:text-base">
-                  No saved tweets yet
-                </div>
-              )}
+                ))}
+                {savedContent[CONTENT_TYPES.TWITTER].length === 0 && (
+                  <div className="text-theme-text-secondary text-center p-4 text-sm">
+                    No saved tweets
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* LinkedIn Section */}
+            <div>
+              <h3 className="text-theme-text-highlight mb-2 text-sm sm:text-base">
+                └── LinkedIn
+              </h3>
+              <div className="space-y-4 max-h-[30vh] overflow-y-auto">
+                {savedContent[CONTENT_TYPES.LINKEDIN].map((post) => (
+                  <div 
+                    key={post.id}
+                    className="p-2 sm:p-3 border-2 border-theme-border-default hover:border-theme-border-focus
+                             transition-colors bg-theme-background"
+                  >
+                    <div className="flex flex-col gap-2">
+                      {editingTweet?.id === post.id ? (
+                        <div className="flex flex-col gap-2">
+                          {showHints && (
+                            <div className="text-theme-text-secondary text-xs border-2 border-theme-border-default p-2 mb-2">
+                              <div className="flex justify-between items-start mb-1">
+                                <p>╔════ Keyboard Shortcuts ════╗</p>
+                                <button
+                                  onClick={() => setShowHints(false)}
+                                  className="text-theme-text-highlight hover:text-theme-error ml-4"
+                                >
+                                  [x]
+                                </button>
+                              </div>
+                              <div className="pl-2">
+                                <p>• Ctrl+Enter - Save changes</p>
+                                <p>• Esc - Cancel editing</p>
+                              </div>
+                              <p>╚═══════════════════════════╝</p>
+                            </div>
+                          )}
+                          <div className="relative">
+                            <textarea
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              onKeyDown={(e) => {
+                                handleEditKeyDown(e);
+                                if (e.key === 'Escape') {
+                                  handleCancelEdit();
+                                }
+                              }}
+                              style={{ height: `${getTextareaHeight(editText)}px` }}
+                              className="w-full p-2 bg-theme-background border-2 border-theme-border-default 
+                                       text-theme-text-primary font-dos resize-none focus:outline-none 
+                                       focus:border-theme-border-focus text-sm sm:text-base
+                                       overflow-y-auto transition-all duration-200"
+                              autoFocus
+                            />
+                            <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                              <span className="text-theme-text-secondary text-xs">
+                                {getTweetCharCount(editText)} chars
+                              </span>
+                              <span className="animate-pulse text-theme-text-primary">█</span>
+                            </div>
+                          </div>
+                          <div className="flex items-center justify-between border-t border-theme-border-default pt-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-theme-text-secondary text-xs">
+                                {showHints ? '↑ Pro tips above' : '[?] Press ? for help'}
+                              </span>
+                            </div>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={handleCancelEdit}
+                                className="px-2 py-1 border-2 border-theme-border-default
+                                         text-theme-text-highlight text-sm
+                                         hover:bg-theme-text-primary hover:text-theme-background
+                                         transition-colors"
+                              >
+                                [Cancel]
+                              </button>
+                              <button
+                                onClick={handleSaveEdit}
+                                className="px-2 py-1 border-2 border-theme-border-default
+                                         text-theme-text-highlight text-sm
+                                         hover:bg-theme-text-primary hover:text-theme-background
+                                         transition-colors"
+                              >
+                                [Save]
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <p className="text-theme-text-primary break-words text-sm sm:text-base">{post.content}</p>
+                          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 mt-1 gap-2 border-t border-theme-border-default">
+                            <span className="text-theme-text-secondary text-xs sm:text-sm">
+                              {getTweetCharCount(post.content)} chars
+                            </span>
+                            <div className="flex gap-2 w-full sm:w-auto">
+                              <button
+                                onClick={() => handleEditClick(post)}
+                                className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
+                                         text-theme-text-highlight text-sm
+                                         hover:bg-theme-text-primary hover:text-theme-background
+                                         transition-colors"
+                              >
+                                [Edit]
+                              </button>
+                              <button
+                                onClick={() => handleTweetClick(post.content)}
+                                className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
+                                         text-theme-text-highlight text-sm
+                                         hover:bg-theme-text-primary hover:text-theme-background
+                                         transition-colors"
+                              >
+                                [Tweet]
+                              </button>
+                              <button
+                                onClick={() => handleDeleteSavedContent(post.id)}
+                                className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
+                                         text-theme-error text-sm
+                                         hover:bg-theme-error hover:text-theme-background
+                                         transition-colors"
+                              >
+                                [Del]
+                              </button>
+                            </div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                {savedContent[CONTENT_TYPES.LINKEDIN].length === 0 && (
+                  <div className="text-theme-text-secondary text-center p-4 text-sm">
+                    No saved posts
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

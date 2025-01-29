@@ -83,6 +83,12 @@ let isConnectionError = false
 let lastConnectionCheck = 0
 const CONNECTION_CHECK_INTERVAL = 5000 // 5 seconds
 
+// Add content types enum
+export const CONTENT_TYPES = {
+  TWITTER: 'twitter',
+  LINKEDIN: 'linkedin'
+}
+
 // Export connection status checker with rate limiting
 export const checkSupabaseConnection = async () => {
   try {

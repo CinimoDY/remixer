@@ -3,7 +3,7 @@ import OpenAI from 'openai';
 // Initialize OpenAI client
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-  baseURL: 'https://api.openai.com/v1' // Add explicit base URL
+  baseURL: 'https://api.openai.com/v1'
 });
 
 const tweetFromPostPrompt = `
@@ -23,6 +23,31 @@ Please return the tweets in a numbered format like this:
 Be sure to include at least five tweets.
 
 Do not use any hashtags or emojis.
+`;
+
+const linkedinFromPostPrompt = `
+You are a social media expert and ghostwriter specializing in LinkedIn content.
+
+Your job is to take a piece of content and transform it into multiple LinkedIn posts that will engage a professional audience.
+
+Since you are a ghostwriter, you need to make sure to follow the style, tone, and voice of the original content as closely as possible.
+
+Remember:
+- LinkedIn posts should be professional but conversational
+- Each post should be between 100-1300 characters
+- Focus on providing value and insights
+- Include a clear call to action when appropriate
+- Break up text into readable paragraphs
+
+Please return the posts in a numbered format like this:
+1. First LinkedIn post here
+
+2. Second LinkedIn post here
+
+3. Third LinkedIn post here
+
+Be sure to include at least three posts.
+Do not use hashtags or emojis.
 `;
 
 export default async function handler(req, res) {
@@ -46,10 +71,10 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { text } = req.body;
+    const { text, contentType = 'twitter' } = req.body;
 
     // Add more detailed logging
-    console.log('Request received:', { textLength: text?.length });
+    console.log('Request received:', { textLength: text?.length, contentType });
     console.log('API Key present:', !!process.env.OPENAI_API_KEY);
 
     // Validate input
@@ -57,12 +82,14 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required text field' });
     }
 
+    const prompt = contentType === 'linkedin' ? linkedinFromPostPrompt : tweetFromPostPrompt;
+
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
         {
           role: "system",
-          content: tweetFromPostPrompt
+          content: prompt
         },
         {
           role: "user",
@@ -71,7 +98,10 @@ export default async function handler(req, res) {
       ],
     });
 
-    return res.status(200).json({ remixedText: completion.choices[0].message.content });
+    return res.status(200).json({ 
+      remixedText: completion.choices[0].message.content,
+      contentType 
+    });
   } catch (error) {
     console.error('Detailed error:', error);
     return res.status(500).json({ 
