@@ -337,7 +337,7 @@ function App() {
         </div>
 
         {/* Mobile Sidebar Toggle */}
-        <div className="fixed bottom-4 right-4 lg:hidden z-10">
+        <div className="lg:hidden text-center mt-4">
           <button
             onClick={() => setIsSidebarVisible(!isSidebarVisible)}
             className="px-3 py-2 border-2 border-theme-border-default
@@ -345,16 +345,17 @@ function App() {
                      hover:bg-theme-text-primary hover:text-theme-background
                      transition-colors whitespace-nowrap bg-theme-background"
           >
-            [{isSidebarVisible ? 'Hide Saved' : 'Show Saved'}]
+            [Saved Tweets {isSidebarVisible ? '▼' : '▲'}]
           </button>
         </div>
 
         {/* Sidebar Container */}
         <div className={`
-          fixed lg:relative top-0 right-0 h-full lg:h-auto
+          lg:relative 
           transition-all duration-300 ease-in-out
-          ${isSidebarVisible ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
-          z-20 lg:z-auto
+          ${isSidebarVisible ? 'max-h-[80vh] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'} 
+          lg:max-h-none lg:opacity-100
+          mt-2 lg:mt-0
         `}>
           {/* Desktop Sidebar Toggle */}
           <div className="hidden lg:block">
@@ -371,7 +372,7 @@ function App() {
 
           {/* Saved Tweets Panel */}
           <div className={`
-            w-[80vw] sm:w-[400px] lg:w-80 h-full lg:h-auto
+            w-full lg:w-80
             border-2 border-theme-border-default
             bg-theme-background
             p-4 flex flex-col
