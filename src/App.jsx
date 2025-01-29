@@ -3,12 +3,30 @@ import { useState } from 'react'
 function App() {
   const [inputText, setInputText] = useState('')
   const [outputText, setOutputText] = useState('')
+  const [parsedTweets, setParsedTweets] = useState([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState(null)
+
+  // Function to parse numbered tweets
+  const parseTweets = (text) => {
+    if (!text) return [];
+    // Match lines that start with a number followed by a dot and space
+    const tweets = text.split('\n')
+      .map(line => line.trim())
+      .filter(line => /^\d+\.\s/.test(line))
+      .map(line => line.replace(/^\d+\.\s/, ''));
+    return tweets;
+  };
+
+  const handleTweetClick = (tweet) => {
+    const tweetText = encodeURIComponent(tweet);
+    window.open(`https://twitter.com/intent/tweet?text=${tweetText}`, '_blank');
+  };
 
   const handleRemix = async () => {
     setIsLoading(true);
     setError(null);
+    setParsedTweets([]);
     try {
       const response = await fetch('/api/remix', {
         method: 'POST',
@@ -27,6 +45,7 @@ function App() {
       }
 
       setOutputText(data.remixedText);
+      setParsedTweets(parseTweets(data.remixedText));
     } catch (error) {
       console.error('Detailed error:', error);
       setError(error.message);
@@ -96,9 +115,9 @@ function App() {
           {/* Output Section */}
           <div>
             <label className="block mb-2 text-theme-text-highlight">
-              C:\OUTPUT&gt; Remixed result:
+              C:\OUTPUT&gt; Generated tweets:
             </label>
-            <div className="border-2 border-theme-border-default p-2 min-h-[120px]">
+            <div className="space-y-4">
               {isLoading ? (
                 <div className="flex justify-center items-center h-[120px]">
                   <div className="animate-pulse text-theme-text-secondary">
@@ -107,9 +126,33 @@ function App() {
                     Please wait...
                   </div>
                 </div>
-              ) : (
+              ) : parsedTweets.length > 0 ? (
+                parsedTweets.map((tweet, index) => (
+                  <div 
+                    key={index}
+                    className="p-3 border-2 border-theme-border-default hover:border-theme-border-focus
+                             transition-colors bg-theme-background"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start flex-1">
+                        <span className="text-theme-text-secondary mr-2">{index + 1}.</span>
+                        <p className="text-theme-text-primary">{tweet}</p>
+                      </div>
+                      <button
+                        onClick={() => handleTweetClick(tweet)}
+                        className="ml-4 px-3 py-1 border-2 border-theme-border-default
+                                 text-theme-text-highlight text-sm
+                                 hover:bg-theme-text-primary hover:text-theme-background
+                                 transition-colors whitespace-nowrap"
+                      >
+                        [Tweet This]
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : outputText ? (
                 <div className="whitespace-pre-wrap">{outputText}</div>
-              )}
+              ) : null}
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "npm run build:tokens && vite",
+    "dev": "vite",
     "server": "node server.js",
     "build": "vite build",
     "vercel-build": "vite build",
