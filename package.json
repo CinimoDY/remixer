@@ -14,13 +14,14 @@
     "build:tokens": "node -r esm ./node_modules/.bin/style-dictionary build --config config.style-dictionary.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.48.1",
+    "@vitejs/plugin-react": "^4.2.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "openai": "^4.80.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@vitejs/plugin-react": "^4.2.1",
     "vite": "^5.0.8"
   },
   "devDependencies": {
