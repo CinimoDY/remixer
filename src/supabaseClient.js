@@ -1,5 +1,13 @@
 import { createClient } from '@supabase/supabase-js'
 
+// Debug logging for environment variables
+console.log('Environment check:', {
+  hasUrl: !!import.meta.env.VITE_SUPABASE_URL,
+  hasKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
+  isDev: import.meta.env.DEV,
+  mode: import.meta.env.MODE
+})
+
 // Check for required environment variables
 const requiredEnvVars = {
   VITE_SUPABASE_URL: import.meta.env.VITE_SUPABASE_URL,
@@ -17,16 +25,31 @@ Object.entries(requiredEnvVars).forEach(([key, value]) => {
 // Initialize Supabase client with retry logic
 const initSupabaseClient = () => {
   try {
-    return createClient(
+    const client = createClient(
       requiredEnvVars.VITE_SUPABASE_URL,
       requiredEnvVars.VITE_SUPABASE_ANON_KEY,
       {
         auth: {
           autoRefreshToken: true,
           persistSession: true
+        },
+        db: {
+          schema: 'public'
         }
       }
     )
+    
+    // Test the connection immediately
+    client.from('saved_tweets').select('count', { count: 'exact', head: true })
+      .then(({ error }) => {
+        if (error) {
+          console.error('Initial connection test failed:', error)
+        } else {
+          console.log('Successfully connected to Supabase')
+        }
+      })
+    
+    return client
   } catch (error) {
     console.error('Failed to initialize Supabase client:', error)
     throw new Error('Failed to initialize database connection')
