@@ -5,7 +5,8 @@ console.log('Environment check:', {
   hasUrl: !!import.meta.env.VITE_SUPABASE_URL,
   hasKey: !!import.meta.env.VITE_SUPABASE_ANON_KEY,
   isDev: import.meta.env.DEV,
-  mode: import.meta.env.MODE
+  mode: import.meta.env.MODE,
+  url: import.meta.env.VITE_SUPABASE_URL // Log the actual URL for verification
 })
 
 // Check for required environment variables
@@ -24,6 +25,8 @@ Object.entries(requiredEnvVars).forEach(([key, value]) => {
 
 // Initialize Supabase client with retry logic
 const initSupabaseClient = () => {
+  console.log('Initializing Supabase client with URL:', requiredEnvVars.VITE_SUPABASE_URL)
+  
   try {
     const client = createClient(
       requiredEnvVars.VITE_SUPABASE_URL,
@@ -39,19 +42,36 @@ const initSupabaseClient = () => {
       }
     )
     
-    // Test the connection immediately
+    // Test the connection immediately with more detailed error logging
     client.from('saved_tweets').select('count', { count: 'exact', head: true })
-      .then(({ error }) => {
+      .then(({ data, error }) => {
         if (error) {
-          console.error('Initial connection test failed:', error)
+          console.error('Initial connection test failed:', {
+            error,
+            message: error.message,
+            details: error.details,
+            hint: error.hint,
+            code: error.code
+          })
         } else {
-          console.log('Successfully connected to Supabase')
+          console.log('Successfully connected to Supabase', { data })
         }
+      })
+      .catch(err => {
+        console.error('Connection test threw an unexpected error:', {
+          name: err.name,
+          message: err.message,
+          stack: err.stack
+        })
       })
     
     return client
   } catch (error) {
-    console.error('Failed to initialize Supabase client:', error)
+    console.error('Failed to initialize Supabase client:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack
+    })
     throw new Error('Failed to initialize database connection')
   }
 }
@@ -111,4 +131,29 @@ export const checkSupabaseConnection = async () => {
       error: 'Database connection error. Please try again later.'
     }
   }
-} 
+}
+
+// Add a test function
+export const testConnection = async () => {
+  console.log('Testing Supabase connection...')
+  try {
+    const { data, error } = await supabase
+      .from('saved_tweets')
+      .select('*')
+      .limit(1)
+
+    if (error) {
+      console.error('Connection test failed:', error)
+      return { success: false, error }
+    }
+
+    console.log('Connection test successful:', data)
+    return { success: true, data }
+  } catch (error) {
+    console.error('Connection test threw an error:', error)
+    return { success: false, error }
+  }
+}
+
+// Run test immediately
+testConnection() 
