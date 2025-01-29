@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { supabase } from './supabaseClient'
+import { supabase, checkSupabaseConnection } from './supabaseClient'
 import { playGenerateSound, playSaveSound, playEditCompleteSound, playDeleteSound } from './sounds'
 
 function App() {
@@ -21,20 +21,20 @@ function App() {
     fetchSavedTweets()
   }, [])
 
-  // Add Supabase connection check
+  // Check Supabase connection on mount and periodically
   useEffect(() => {
-    const checkSupabaseConnection = async () => {
-      try {
-        const { error } = await supabase.from('saved_tweets').select('count', { count: 'exact', head: true })
-        if (error) throw error
-        setSupabaseError(null)
-      } catch (error) {
-        console.error('Supabase connection error:', error)
-        setSupabaseError('Database connection error. Some features may be unavailable.')
-      }
+    const checkConnection = async () => {
+      const { error } = await checkSupabaseConnection()
+      setSupabaseError(error)
     }
 
-    checkSupabaseConnection()
+    // Initial check
+    checkConnection()
+
+    // Periodic check every 30 seconds
+    const interval = setInterval(checkConnection, 30000)
+
+    return () => clearInterval(interval)
   }, [])
 
   const fetchSavedTweets = async () => {
