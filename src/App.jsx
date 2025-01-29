@@ -14,10 +14,27 @@ function App() {
   const [editingTweet, setEditingTweet] = useState(null)
   const [editText, setEditText] = useState('')
   const [showHints, setShowHints] = useState(true)
+  const [supabaseError, setSupabaseError] = useState(null)
 
   // Fetch saved tweets on component mount
   useEffect(() => {
     fetchSavedTweets()
+  }, [])
+
+  // Add Supabase connection check
+  useEffect(() => {
+    const checkSupabaseConnection = async () => {
+      try {
+        const { error } = await supabase.from('saved_tweets').select('count', { count: 'exact', head: true })
+        if (error) throw error
+        setSupabaseError(null)
+      } catch (error) {
+        console.error('Supabase connection error:', error)
+        setSupabaseError('Database connection error. Some features may be unavailable.')
+      }
+    }
+
+    checkSupabaseConnection()
   }, [])
 
   const fetchSavedTweets = async () => {
@@ -183,6 +200,11 @@ function App() {
 
   return (
     <div className="min-h-screen bg-theme-background text-theme-text-primary font-dos p-2 sm:p-4">
+      {supabaseError && (
+        <div className="fixed top-0 left-0 right-0 bg-theme-error text-theme-background p-2 text-center text-sm z-50">
+          {supabaseError}
+        </div>
+      )}
       <div className="container mx-auto max-w-6xl flex flex-col lg:flex-row gap-4">
         {/* Main Content */}
         <div className="flex-1">
