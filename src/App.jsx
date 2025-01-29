@@ -9,6 +9,10 @@ function App() {
   const [error, setError] = useState(null)
   const [savedTweets, setSavedTweets] = useState([])
   const [isSaving, setIsSaving] = useState(false)
+  const [isSidebarVisible, setIsSidebarVisible] = useState(true)
+  const [editingTweet, setEditingTweet] = useState(null)
+  const [editText, setEditText] = useState('')
+  const [showHints, setShowHints] = useState(true)
 
   // Fetch saved tweets on component mount
   useEffect(() => {
@@ -63,6 +67,46 @@ function App() {
     }
   }
 
+  const handleEditClick = (tweet) => {
+    setEditingTweet(tweet)
+    setEditText(tweet.content)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingTweet(null)
+    setEditText('')
+  }
+
+  const handleSaveEdit = async () => {
+    if (!editingTweet) return
+
+    try {
+      const { error } = await supabase
+        .from('saved_tweets')
+        .update({ content: editText })
+        .eq('id', editingTweet.id)
+
+      if (error) throw error
+      
+      // Refresh the saved tweets list
+      await fetchSavedTweets()
+      handleCancelEdit()
+    } catch (error) {
+      console.error('Error updating tweet:', error)
+    }
+  }
+
+  const handleEditKeyDown = (e) => {
+    if (e.ctrlKey && e.key === 'Enter') {
+      handleSaveEdit();
+    } else if (e.key === 'Escape') {
+      handleCancelEdit();
+    } else if (e.key === '?') {
+      e.preventDefault();
+      setShowHints(prev => !prev);
+    }
+  };
+
   // Function to parse numbered tweets
   const parseTweets = (text) => {
     if (!text) return [];
@@ -115,48 +159,63 @@ function App() {
     return tweet.length;
   };
 
+  // Function to calculate textarea height based on content
+  const getTextareaHeight = (text) => {
+    const lineHeight = 20; // Approximate line height in pixels
+    const padding = 32; // Total vertical padding
+    const lines = text.split('\n').length;
+    const heightByContent = Math.max(lines * lineHeight + padding, 160);
+    return heightByContent;
+  };
+
   return (
-    <div className="min-h-screen bg-theme-background text-theme-text-primary font-dos p-4">
-      <div className="container mx-auto max-w-6xl flex gap-4">
+    <div className="min-h-screen bg-theme-background text-theme-text-primary font-dos p-2 sm:p-4">
+      <div className="container mx-auto max-w-6xl flex flex-col lg:flex-row gap-4">
         {/* Main Content */}
         <div className="flex-1">
           {/* DOS-style Header */}
-          <div className="mb-8 border-2 border-theme-border-default p-4">
-            <h1 className="text-4xl font-bold text-center text-theme-text-highlight">
-              ╔═══════════════════╗
+          <div className="mb-4 sm:mb-8">
+            <h1 className="text-2xl sm:text-4xl font-bold text-center text-theme-text-highlight whitespace-nowrap overflow-x-auto">
+              <span className="hidden sm:inline">╔═══════════════════╗</span>
+              <span className="inline sm:hidden">╔═══════╗</span>
               <br />
-              ║  Content Remixer  ║
+              <span className="hidden sm:inline">║  Content Remixer  ║</span>
+              <span className="inline sm:hidden">║ Remixer ║</span>
               <br />
-              ╚═══════════════════╝
+              <span className="hidden sm:inline">╚═══════════════════╝</span>
+              <span className="inline sm:hidden">╚═══════╝</span>
             </h1>
-            <p className="text-center mt-2 cursor text-theme-text-secondary">
-              C:\APPS\REMIXER&gt; Transform your text with AI magic
+            <p className="text-center mt-2 text-theme-text-secondary text-sm sm:text-base">
+              D:\APPS\REMIXER&gt; Generate Tweets from longer Posts
             </p>
           </div>
           
           {/* Main Terminal Window */}
-          <div className="border-2 border-theme-border-default p-4">
+          <div className="p-2 sm:p-4">
             {/* Input Section */}
-            <div className="mb-6">
-              <label className="block mb-2 text-theme-text-highlight">
-                C:\INPUT&gt; Enter your text:
+            <div className="mb-4 sm:mb-6">
+              <label className="block mb-2 text-theme-text-highlight text-sm sm:text-base">
+                D:\INPUT&gt;
               </label>
-              <textarea
-                className="w-full p-2 bg-theme-background border-2 border-theme-border-default text-theme-text-primary 
-                          font-dos resize-none focus:outline-none focus:border-theme-border-focus
-                          min-h-[120px]"
-                value={inputText}
-                onChange={(e) => setInputText(e.target.value)}
-                placeholder="Type or paste your content here..."
-                disabled={isLoading}
-              />
+              <div className="relative">
+                <textarea
+                  className="w-full p-2 bg-theme-background border-2 border-theme-border-default text-theme-text-primary 
+                            font-dos resize-none focus:outline-none focus:border-theme-border-focus
+                            min-h-[120px] text-sm sm:text-base"
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  placeholder="Type or paste your content here..."
+                  disabled={isLoading}
+                />
+                <span className="absolute bottom-2 right-2 animate-pulse text-theme-text-primary">█</span>
+              </div>
             </div>
 
             {/* Remix Button */}
-            <div className="flex justify-center mb-6">
+            <div className="flex justify-center mb-4 sm:mb-6">
               <button
-                className="px-6 py-2 border-2 border-theme-border-default 
-                          text-theme-text-highlight
+                className="px-4 sm:px-6 py-2 border-2 border-theme-border-default 
+                          text-theme-text-highlight text-sm sm:text-base
                           hover:bg-theme-text-primary hover:text-theme-background
                           transition-colors disabled:opacity-50 
                           disabled:cursor-not-allowed"
@@ -169,20 +228,20 @@ function App() {
 
             {/* Error Display */}
             {error && (
-              <div className="mb-6 p-2 border-2 border-theme-error text-theme-error">
+              <div className="mb-4 sm:mb-6 p-2 border-2 border-theme-error text-theme-error text-sm sm:text-base">
                 ERROR: {error}
               </div>
             )}
 
-            {/* Modified Output Section with Save Button and Character Count */}
+            {/* Output Section */}
             <div>
-              <label className="block mb-2 text-theme-text-highlight">
-                C:\OUTPUT&gt; Generated tweets:
+              <label className="block mb-2 text-theme-text-highlight text-sm sm:text-base">
+                D:\OUTPUT&gt; Generated tweets:
               </label>
               <div className="space-y-4">
                 {isLoading ? (
                   <div className="flex justify-center items-center h-[120px]">
-                    <div className="animate-pulse text-theme-text-secondary">
+                    <div className="animate-pulse text-theme-text-secondary text-sm sm:text-base">
                       Processing request...
                       <br />
                       Please wait...
@@ -192,22 +251,22 @@ function App() {
                   parsedTweets.map((tweet, index) => (
                     <div 
                       key={index}
-                      className="p-3 border-2 border-theme-border-default hover:border-theme-border-focus
+                      className="p-2 sm:p-3 border-2 border-theme-border-default hover:border-theme-border-focus
                                transition-colors bg-theme-background"
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex items-start gap-2">
-                          <span className="text-theme-text-secondary shrink-0">{index + 1}.</span>
-                          <p className="text-theme-text-primary flex-1">{tweet}</p>
+                          <span className="text-theme-text-secondary shrink-0 text-sm sm:text-base">{index + 1}.</span>
+                          <p className="text-theme-text-primary flex-1 text-sm sm:text-base">{tweet}</p>
                         </div>
-                        <div className="flex items-center justify-between border-t border-theme-border-default pt-2 mt-1">
-                          <span className="text-theme-text-secondary text-sm">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 mt-1 gap-2 border-t border-theme-border-default">
+                          <span className="text-theme-text-secondary text-xs sm:text-sm">
                             {getTweetCharCount(tweet)} chars
                           </span>
-                          <div className="flex gap-2">
+                          <div className="flex gap-2 w-full sm:w-auto">
                             <button
                               onClick={() => handleSaveTweet(tweet)}
-                              className="px-3 py-1 border-2 border-theme-border-default
+                              className="flex-1 sm:flex-none px-3 py-1 border-2 border-theme-border-default
                                        text-theme-text-highlight text-sm
                                        hover:bg-theme-text-primary hover:text-theme-background
                                        transition-colors whitespace-nowrap"
@@ -217,7 +276,7 @@ function App() {
                             </button>
                             <button
                               onClick={() => handleTweetClick(tweet)}
-                              className="px-3 py-1 border-2 border-theme-border-default
+                              className="flex-1 sm:flex-none px-3 py-1 border-2 border-theme-border-default
                                        text-theme-text-highlight text-sm
                                        hover:bg-theme-text-primary hover:text-theme-background
                                        transition-colors whitespace-nowrap"
@@ -230,65 +289,191 @@ function App() {
                     </div>
                   ))
                 ) : outputText ? (
-                  <div className="whitespace-pre-wrap">{outputText}</div>
+                  <div className="whitespace-pre-wrap text-sm sm:text-base">{outputText}</div>
                 ) : null}
               </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="mt-4 text-center text-theme-text-secondary">
-            Press any key to continue...
+          <div className="mt-4 text-center text-theme-text-secondary text-sm sm:text-base">
+            Don't just be, press a key :D
           </div>
         </div>
 
-        {/* Modified Saved Tweets Side Panel */}
-        <div className="w-80 border-2 border-theme-border-default p-4 flex flex-col">
-          <h2 className="text-xl text-theme-text-highlight mb-4 border-b-2 border-theme-border-default pb-2">
-            C:\SAVED&gt; Saved Tweets
-          </h2>
-          <div className="space-y-4 flex-1 overflow-y-auto">
-            {savedTweets.map((tweet) => (
-              <div 
-                key={tweet.id}
-                className="p-3 border-2 border-theme-border-default hover:border-theme-border-focus
-                         transition-colors bg-theme-background"
-              >
-                <div className="flex flex-col gap-2">
-                  <p className="text-theme-text-primary break-words">{tweet.content}</p>
-                  <div className="flex items-center justify-between border-t border-theme-border-default pt-2 mt-1">
-                    <span className="text-theme-text-secondary text-sm">
-                      {getTweetCharCount(tweet.content)} chars
-                    </span>
-                    <div className="flex gap-2 shrink-0">
-                      <button
-                        onClick={() => handleTweetClick(tweet.content)}
-                        className="px-2 py-1 border-2 border-theme-border-default
-                                 text-theme-text-highlight text-sm
-                                 hover:bg-theme-text-primary hover:text-theme-background
-                                 transition-colors"
-                      >
-                        [Tweet]
-                      </button>
-                      <button
-                        onClick={() => handleDeleteSavedTweet(tweet.id)}
-                        className="px-2 py-1 border-2 border-theme-border-default
-                                 text-theme-error text-sm
-                                 hover:bg-theme-error hover:text-theme-background
-                                 transition-colors"
-                      >
-                        [Del]
-                      </button>
-                    </div>
+        {/* Mobile Sidebar Toggle */}
+        <div className="fixed bottom-4 right-4 lg:hidden z-10">
+          <button
+            onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+            className="px-3 py-2 border-2 border-theme-border-default
+                     text-theme-text-highlight text-sm
+                     hover:bg-theme-text-primary hover:text-theme-background
+                     transition-colors whitespace-nowrap bg-theme-background"
+          >
+            [{isSidebarVisible ? 'Hide Saved' : 'Show Saved'}]
+          </button>
+        </div>
+
+        {/* Sidebar Container */}
+        <div className={`
+          fixed lg:relative top-0 right-0 h-full lg:h-auto
+          transition-all duration-300 ease-in-out
+          ${isSidebarVisible ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+          z-20 lg:z-auto
+        `}>
+          {/* Desktop Sidebar Toggle */}
+          <div className="hidden lg:block">
+            <button
+              onClick={() => setIsSidebarVisible(!isSidebarVisible)}
+              className="px-2 py-1 border-2 border-theme-border-default
+                       text-theme-text-highlight text-sm mb-2
+                       hover:bg-theme-text-primary hover:text-theme-background
+                       transition-colors whitespace-nowrap self-end"
+            >
+              [{isSidebarVisible ? '<<' : '>>'}]
+            </button>
+          </div>
+
+          {/* Saved Tweets Panel */}
+          <div className={`
+            w-[80vw] sm:w-[400px] lg:w-80 h-full lg:h-auto
+            border-2 border-theme-border-default
+            bg-theme-background
+            p-4 flex flex-col
+            transition-all duration-300 ease-in-out
+            ${isSidebarVisible ? 'opacity-100' : 'lg:opacity-0 lg:w-0 lg:p-0 lg:border-0'}
+          `}>
+            <h2 className="text-lg sm:text-xl text-theme-text-highlight mb-4 border-b-2 border-theme-border-default pb-2">
+              D:\SAVED&gt; Saved Tweets
+            </h2>
+            <div className="space-y-4 flex-1 overflow-y-auto">
+              {savedTweets.map((tweet) => (
+                <div 
+                  key={tweet.id}
+                  className="p-2 sm:p-3 border-2 border-theme-border-default hover:border-theme-border-focus
+                           transition-colors bg-theme-background"
+                >
+                  <div className="flex flex-col gap-2">
+                    {editingTweet?.id === tweet.id ? (
+                      <div className="flex flex-col gap-2">
+                        {showHints && (
+                          <div className="text-theme-text-secondary text-xs border-2 border-theme-border-default p-2 mb-2">
+                            <div className="flex justify-between items-start mb-1">
+                              <p>╔════ Keyboard Shortcuts ════╗</p>
+                              <button
+                                onClick={() => setShowHints(false)}
+                                className="text-theme-text-highlight hover:text-theme-error ml-4"
+                              >
+                                [x]
+                              </button>
+                            </div>
+                            <div className="pl-2">
+                              <p>• Ctrl+Enter - Save changes</p>
+                              <p>• Esc - Cancel editing</p>
+                            </div>
+                            <p>╚═══════════════════════════╝</p>
+                          </div>
+                        )}
+                        <div className="relative">
+                          <textarea
+                            value={editText}
+                            onChange={(e) => setEditText(e.target.value)}
+                            onKeyDown={(e) => {
+                              handleEditKeyDown(e);
+                              if (e.key === 'Escape') {
+                                handleCancelEdit();
+                              }
+                            }}
+                            style={{ height: `${getTextareaHeight(editText)}px` }}
+                            className="w-full p-2 bg-theme-background border-2 border-theme-border-default 
+                                     text-theme-text-primary font-dos resize-none focus:outline-none 
+                                     focus:border-theme-border-focus text-sm sm:text-base
+                                     overflow-y-auto transition-all duration-200"
+                            autoFocus
+                          />
+                          <div className="absolute bottom-2 right-2 flex items-center gap-2">
+                            <span className="text-theme-text-secondary text-xs">
+                              {getTweetCharCount(editText)} chars
+                            </span>
+                            <span className="animate-pulse text-theme-text-primary">█</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between border-t border-theme-border-default pt-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-theme-text-secondary text-xs">
+                              {showHints ? '↑ Pro tips above' : '[?] Press ? for help'}
+                            </span>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={handleCancelEdit}
+                              className="px-2 py-1 border-2 border-theme-border-default
+                                       text-theme-text-highlight text-sm
+                                       hover:bg-theme-text-primary hover:text-theme-background
+                                       transition-colors"
+                            >
+                              [Cancel]
+                            </button>
+                            <button
+                              onClick={handleSaveEdit}
+                              className="px-2 py-1 border-2 border-theme-border-default
+                                       text-theme-text-highlight text-sm
+                                       hover:bg-theme-text-primary hover:text-theme-background
+                                       transition-colors"
+                            >
+                              [Save]
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-theme-text-primary break-words text-sm sm:text-base">{tweet.content}</p>
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-2 mt-1 gap-2 border-t border-theme-border-default">
+                          <span className="text-theme-text-secondary text-xs sm:text-sm">
+                            {getTweetCharCount(tweet.content)} chars
+                          </span>
+                          <div className="flex gap-2 w-full sm:w-auto">
+                            <button
+                              onClick={() => handleEditClick(tweet)}
+                              className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
+                                       text-theme-text-highlight text-sm
+                                       hover:bg-theme-text-primary hover:text-theme-background
+                                       transition-colors"
+                            >
+                              [Edit]
+                            </button>
+                            <button
+                              onClick={() => handleTweetClick(tweet.content)}
+                              className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
+                                       text-theme-text-highlight text-sm
+                                       hover:bg-theme-text-primary hover:text-theme-background
+                                       transition-colors"
+                            >
+                              [Tweet]
+                            </button>
+                            <button
+                              onClick={() => handleDeleteSavedTweet(tweet.id)}
+                              className="flex-1 sm:flex-none px-2 py-1 border-2 border-theme-border-default
+                                       text-theme-error text-sm
+                                       hover:bg-theme-error hover:text-theme-background
+                                       transition-colors"
+                            >
+                              [Del]
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
-              </div>
-            ))}
-            {savedTweets.length === 0 && (
-              <div className="text-theme-text-secondary text-center p-4">
-                No saved tweets yet
-              </div>
-            )}
+              ))}
+              {savedTweets.length === 0 && (
+                <div className="text-theme-text-secondary text-center p-4 text-sm sm:text-base">
+                  No saved tweets yet
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
