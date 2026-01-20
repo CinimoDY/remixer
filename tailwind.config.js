@@ -1,8 +1,14 @@
 /** @type {import('tailwindcss').Config} */
+import { createRequire } from 'module'
+const require = createRequire(import.meta.url)
+const eidotterPreset = require('eidotter/tailwind.preset')
+
 export default {
+  presets: [eidotterPreset],
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    "./node_modules/eidotter/dist/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -36,4 +42,4 @@ export default {
     },
   },
   plugins: [],
-} 
+}

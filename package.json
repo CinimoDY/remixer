@@ -14,6 +14,7 @@
     "build:tokens": "node -r esm ./node_modules/.bin/style-dictionary build --config config.style-dictionary.js"
   },
   "dependencies": {
+    "eidotter": "file:../eidotter",
     "@supabase/supabase-js": "^2.48.1",
     "@vitejs/plugin-react": "^4.2.1",
     "cors": "^2.8.5",

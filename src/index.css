@@ -1,3 +1,7 @@
+/* Eidotter Design System */
+@import 'eidotter/tokens.css';
+@import 'eidotter/styles';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,12 +15,13 @@
 }
 
 :root {
-  --color-theme-background: #000000;
-  --color-theme-text-primary: #FFB000;
-  --color-theme-text-secondary: rgba(255, 176, 0, 0.7);
-  --color-theme-text-highlight: #FFD000;
-  --color-theme-border-default: #FFB000;
-  --color-theme-border-focus: #FFD000;
+  /* Map Remixer theme to Eidotter amber palette */
+  --color-theme-background: var(--color-cga-black, #000000);
+  --color-theme-text-primary: var(--color-cga-amber, #FFB000);
+  --color-theme-text-secondary: var(--color-cga-amber-glow, rgba(255, 176, 0, 0.7));
+  --color-theme-text-highlight: var(--color-cga-yellow, #FFD000);
+  --color-theme-border-default: var(--color-cga-amber, #FFB000);
+  --color-theme-border-focus: var(--color-cga-yellow, #FFD000);
   --color-theme-error: #FF0000;
 }
 
@@ -34,7 +39,7 @@
     font-family: 'DOS', Consolas, Monaco, monospace;
     min-height: 100vh;
   }
-  
+
   body {
     text-shadow: 0 0 2px var(--color-theme-text-secondary);
     position: relative;
@@ -99,27 +104,6 @@
 
   input:focus, textarea:focus {
     border-color: var(--color-theme-border-focus);
-  }
-
-  /* Reset button styles */
-  button {
-    background-color: transparent;
-    border: 2px solid var(--color-theme-border-default);
-    color: var(--color-theme-text-primary);
-    font-family: 'DOS', Consolas, Monaco, monospace;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-
-  button:hover:not(:disabled) {
-    background-color: var(--color-theme-text-primary);
-    color: var(--color-theme-background);
-  }
-
-  button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
   }
 }
 
