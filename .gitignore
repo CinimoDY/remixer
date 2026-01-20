@@ -77,3 +77,9 @@ lerna-debug.log*
 .njsproj
 
 .vercel
+
+# Local development
+.cursor/
+.devjournal/
+.envrc
+.playwright-mcp/
